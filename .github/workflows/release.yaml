@@ -1,0 +1,69 @@
+name: Create actions-test release
+on:
+  push:
+    tags:
+      - 'release-v*'
+
+jobs:
+  prepare-release:
+    name: Perform automatic release on trigger ${{ github.ref }}
+    if: github.repository == 'crenshaw-dev/actions-test'
+    runs-on: ubuntu-latest
+    env:
+      SOURCE_TAG: ${{ github.ref }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Check if the published tag is well formed and setup vars
+        run: |
+          set -xue
+          TARGET_VERSION=${SOURCE_TAG#*release-v}
+          TARGET_BRANCH="release-${TARGET_VERSION%\.[0-9]*}"
+          RELEASE_TAG="${SOURCE_TAG#*release-}"
+
+          echo "TARGET_VERSION=${TARGET_VERSION}" >> $GITHUB_ENV
+          echo "TARGET_BRANCH=${TARGET_BRANCH}" >> $GITHUB_ENV
+          echo "RELEASE_TAG=${RELEASE_TAG}" >> $GITHUB_ENV
+
+      - name: Checkout corresponding release branch
+        run: |
+          set -ue
+          echo "Switching to release branch '${TARGET_BRANCH}'"
+          if ! git checkout ${TARGET_BRANCH}; then
+            echo "::error::Checking out release branch '${TARGET_BRANCH}' for target version '${TARGET_VERSION}' (tagged '${RELEASE_TAG}') failed. Does it exist in repo?"
+            exit 1
+          fi
+
+      - name: Create the release tag
+        run: |
+          set -ue
+          echo "Creating release ${RELEASE_TAG}"
+          git tag ${RELEASE_TAG}
+
+      - name: Create GitHub release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        id: create_release
+        with:
+          tag_name: ${{ env.RELEASE_TAG }}
+          release_name: ${{ env.RELEASE_TAG }}
+          draft: ${{ env.DRAFT_RELEASE }}
+
+      - name: Generate Snyk report
+        id: snyk-report
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: |
+          npm install -g snyk snyk-to-html
+          snyk test | snyk-to-html --output /tmp/snyk-report.html
+
+      - name: Upload Snyk report to release assets
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: /tmp/snyk-report.html
+          asset_name: snyk-report.html
+          asset_content_type: application/octet-stream

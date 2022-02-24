@@ -14,8 +14,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
       - name: Check if the published tag is well formed and setup vars
         run: |
           set -xue
@@ -30,6 +28,7 @@ jobs:
       - name: Checkout corresponding release branch
         run: |
           set -ue
+          git fetch
           echo "Switching to release branch '${TARGET_BRANCH}'"
           if ! git checkout ${TARGET_BRANCH}; then
             echo "::error::Checking out release branch '${TARGET_BRANCH}' for target version '${TARGET_VERSION}' (tagged '${RELEASE_TAG}') failed. Does it exist in repo?"

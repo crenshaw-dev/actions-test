@@ -51,7 +51,6 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         run: |
           npm install -g snyk snyk-to-html
-          sudo apt install jq -y
 
           snyk test --json-file-output=/tmp/snyk.json
           snyk iac test manifests/install.yaml --json-file-output=/tmp/snyk-iac.json

@@ -54,6 +54,7 @@ jobs:
 
           snyk test --json --all-projects | snyk-to-html --output /tmp/snyk-report.html
           snyk iac test manifests/install.yaml --json | snyk-to-html --output /tmp/snyk-iac-report.html
+          snyk container test quay.io/argoproj/argocd:latest --org=argoproj --file=Dockerfile
           snyk container test quay.io/argoproj/argocd:latest --org=argoproj --file=Dockerfile --json | snyk-to-html --output /tmp/snyk-container-report.html
 
       - name: Upload Snyk report to release assets

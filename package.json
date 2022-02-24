@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "argo-ui": "^1.0.0"
+    "argo-ui": "^1.0.0",
+    "json-pointer": "^0.6.1"
   }
 }

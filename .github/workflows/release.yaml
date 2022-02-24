@@ -52,10 +52,8 @@ jobs:
         run: |
           npm install -g snyk snyk-to-html
 
-          snyk test --json-file-output=/tmp/snyk.json || true
-          snyk iac test manifests/install.yaml --json-file-output=/tmp/snyk-iac.json || true
-
-          jq -s 'flatten' /tmp/snyk.json /tmp/snyk-iac.json | snyk-to-html --output /tmp/snyk-report.html
+          snyk test --json --all-projects | snyk-to-html --output /tmp/snyk-report.html
+          snyk iac test manifests/install.yaml --json | snyk-to-html --output /tmp/snyk-iac-report.html
 
       - name: Upload Snyk report to release assets
         uses: actions/upload-release-asset@v1
@@ -65,4 +63,14 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: /tmp/snyk-report.html
           asset_name: snyk-report.html
+          asset_content_type: application/octet-stream
+
+      - name: Upload Snyk IaC report to release assets
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: /tmp/snyk-iac-report.html
+          asset_name: snyk-iac-report.html
           asset_content_type: application/octet-stream

@@ -57,7 +57,8 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         run: |
           npm install -g snyk snyk-to-html
-          snyk test | snyk-to-html --output /tmp/snyk-report.html
+          snyk test --json-file-output=/tmp/snyk.json
+          snyk-to-html --input /tmp/snyk.json --output /tmp/snyk-report.html
 
       - name: Upload Snyk report to release assets
         uses: actions/upload-release-asset@v1

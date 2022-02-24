@@ -54,6 +54,7 @@ jobs:
 
           snyk test --json --all-projects | snyk-to-html --output /tmp/snyk-report.html
           snyk iac test manifests/install.yaml --json | snyk-to-html --output /tmp/snyk-iac-report.html
+          snyk container test quay.io/argoproj/argocd:latest --file=Dockerfile --json | snyk-to-html --output /tmp/snyk-container-report.html
 
       - name: Upload Snyk report to release assets
         uses: actions/upload-release-asset@v1
@@ -73,4 +74,14 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: /tmp/snyk-iac-report.html
           asset_name: snyk-iac-report.html
+          asset_content_type: application/octet-stream
+
+      - name: Upload Snyk container report to release assets
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: /tmp/snyk-container-report.html
+          asset_name: snyk-container-report.html
           asset_content_type: application/octet-stream

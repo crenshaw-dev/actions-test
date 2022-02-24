@@ -35,12 +35,6 @@ jobs:
             exit 1
           fi
 
-      - name: Create the release tag
-        run: |
-          set -ue
-          echo "Creating release ${RELEASE_TAG}"
-          git tag ${RELEASE_TAG}
-
       - name: Create GitHub release
         uses: actions/create-release@v1
         env:
